@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>My Transactions</title>
+    <link rel="stylesheet" href="styles.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.11.0/gsap.min.js"></script>
+</head>
+<body>
+    <button class="save-button"><a href="/" style="text-decoration: none; color: antiquewhite;">HOME</a></button>
+    <div id="transactionsContainer">
+        <h2>Saved Transactions</h2>
+        <input type="search" id="searchInput" placeholder="Search by Recipient" oninput="filterTransactions()">
+        
+        <label for="sortCriteria" style="margin-bottom: 10px;">Sort By:</label>
+        <select id="sortCriteria" onchange="sortTransactions()">
+            <option value="" disabled selected>Select criteria</option>
+            <option value="amount">Amount</option>
+            <option value="date">Date</option>
+        </select>
+
+        <table id="transactionsTable">
+            <thead>
+                <tr>
+                    <th>Money Sent To</th>
+                    <th>Transaction ID</th>
+                    <th>Amount</th>
+                    <th>Date</th>
+                    <th>Status</th>
+                    <th>Actions</th>
+                    <th>Purpose</th> <!-- Add this line -->
+                </tr>
+            </thead>
+            <tbody>
+                <!-- Table rows will be inserted here dynamically -->
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            renderTransactions();
+        });
+
+        function renderTransactions() {
+            const tbody = document.querySelector('#transactionsTable tbody');
+            const storedTransactions = JSON.parse(localStorage.getItem('transactions'));
+            const searchInput = document.getElementById('searchInput').value.toLowerCase();
+
+            // Clear existing rows
+            tbody.innerHTML = '';
+            if (storedTransactions && storedTransactions.length > 0) {
+                storedTransactions.forEach((trans, index) => {
+                    if (trans.moneySentTo.toLowerCase().includes(searchInput)) {
+                        const row = document.createElement('tr');
+                        row.innerHTML = `
+                            <td>${trans.moneySentTo}</td>
+                            <td>${trans.transactionId}</td>
+                            <td>${trans.amount}</td>
+                            <td>${trans.transactionDate}</td>
+                            <td>${trans.status}</td>
+                            <td>
+                                <button class="btn btn-update" onclick="updateTransaction(${index})">Update</button>
+                                <button class="btn btn-delete" onclick="deleteTransaction(${index})">Delete</button>
+                            </td>
+                            <td>${trans.transactionPurpose}</td> <!-- Add this line -->
+                        `;
+                        tbody.appendChild(row);
+                        animateRow(row, index);
+                    }
+                });
+            } else {
+                tbody.innerHTML = '<tr><td colspan="6">No transactions saved.</td></tr>';
+            }
+        }
+
+        function sortTransactions() {
+            const criteria = document.getElementById('sortCriteria').value;
+            let storedTransactions = JSON.parse(localStorage.getItem('transactions'));
+
+            if (criteria === 'amount') {
+                storedTransactions.sort((a, b) => parseFloat(a.amount) - parseFloat(b.amount));
+            } else if (criteria === 'date') {
+                storedTransactions.sort((a, b) => new Date(a.transactionDate) - new Date(b.transactionDate));
+            }
+
+            localStorage.setItem('transactions', JSON.stringify(storedTransactions));
+            renderTransactions();
+        }
+
+        function deleteTransaction(index) {
+            let storedTransactions = JSON.parse(localStorage.getItem('transactions'));
+            storedTransactions.splice(index, 1);
+            localStorage.setItem('transactions', JSON.stringify(storedTransactions));
+            renderTransactions();
+        }
+
+        function updateTransaction(index) {
+            let storedTransactions = JSON.parse(localStorage.getItem('transactions'));
+            const trans = storedTransactions[index];
+            const newMoneySentTo = prompt("Enter new Recipient:", trans.moneySentTo);
+            const newTransactionId = prompt("Enter new Transaction ID:", trans.transactionId);
+            const newAmount = prompt("Enter new Amount:", trans.amount);
+            const newTransactionDate = prompt("Enter new Transaction Date:", trans.transactionDate);
+            const newStatus = prompt("Enter new Status (Paid/Received):", trans.status);
+
+            if (newMoneySentTo && newTransactionId && newAmount && newTransactionDate && newStatus) {
+                storedTransactions[index] = {
+                    moneySentTo: newMoneySentTo,
+                    transactionId: newTransactionId,
+                    amount: newAmount,
+                    transactionDate: newTransactionDate,
+                    status: newStatus
+                };
+                localStorage.setItem('transactions', JSON.stringify(storedTransactions));
+                renderTransactions();
+            } else {
+                alert('All fields must be filled out.');
+            }
+        }
+
+        function filterTransactions() {
+            renderTransactions();
+        }
+
+        function animateRow(row, index) {
+            gsap.from(row, { duration: 1, x: 50 * (index + 1), opacity: 0, ease: "power3.out" });
+        }
+    </script>
+</body>
+</html>

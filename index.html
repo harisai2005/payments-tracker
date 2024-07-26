@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Transaction Manager</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <button class="save-button" onclick="viewSavedTransactions()">My Transactions</button>
+    <div class="container">
+        <h2>Enter Your Transaction</h2>
+        <input type="text" id="moneySentTo" placeholder="PersonName" required>
+        <input type="text" id="transactionId" placeholder="Transaction ID" required>
+        <input type="number" id="amount" placeholder="Amount" required>
+        <input type="date" id="transactionDate" placeholder="Transaction Date" required>
+        <select id="status" required>
+            <option value="" disabled selected>Paid/Received</option>
+            <option value="Paid">Paid</option>
+            <option value="Received">Received</option>
+        </select>
+        <textarea id="transactionPurpose" placeholder="Purpose of Transaction" required></textarea>
+        <button class="submit-button" onclick="saveTransaction()">Submit</button>
+    </div>
+
+    <script>
+        function saveTransaction() {
+            const moneySentTo = document.getElementById('moneySentTo').value;
+            const transactionId = document.getElementById('transactionId').value;
+            const amount = document.getElementById('amount').value;
+            const transactionDate = document.getElementById('transactionDate').value;
+            const status = document.getElementById('status').value;
+            const transactionPurpose = document.getElementById('transactionPurpose').value;
+        
+            if (moneySentTo && transactionId && amount && transactionDate && status && transactionPurpose) {
+                const transaction = {
+                    moneySentTo,
+                    transactionId,
+                    amount: parseFloat(amount),
+                    transactionDate,
+                    status,
+                    transactionPurpose // Add the purpose here
+                };
+        
+                let storedTransactions = localStorage.getItem('transactions');
+                storedTransactions = storedTransactions ? JSON.parse(storedTransactions) : [];
+                storedTransactions.push(transaction);
+                localStorage.setItem('transactions', JSON.stringify(storedTransactions));
+                alert('Transaction saved successfully');
+        
+                // Clear the input fields
+                document.getElementById('moneySentTo').value = '';
+                document.getElementById('transactionId').value = '';
+                document.getElementById('amount').value = '';
+                document.getElementById('transactionDate').value = '';
+                document.getElementById('status').value = '';
+                document.getElementById('transactionPurpose').value = ''; // Clear purpose field
+            } else {
+                alert('Please fill out all fields');
+            }
+        }
+
+        function viewSavedTransactions() {
+            window.location.href = 'mytransactions.html';
+        }
+    </script>
+</body>
+</html>
